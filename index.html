@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hapvida - Painel BI | Acompanhamento Termo de Ciência</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase e Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0056b3;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f9;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        h2 { color: var(--primary); margin: 0; }
+        .filters-bar {
+            display: flex;
+            gap: 15px;
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+        .filter-group { display: flex; flex-direction: column; flex: 1; }
+        .filter-group label { font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+        .filter-group select { padding: 8px; border-radius: 6px; border: 1px solid #ced4da; }
+
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .kpi-card {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .kpi-card h4 { margin: 0 0 10px 0; font-size: 13px; color: #6c757d; }
+        .kpi-card span { font-size: 24px; font-weight: 700; }
+        .kpi-card.total span { color: var(--primary); }
+        .kpi-card.preenchidos span { color: var(--success); }
+        .kpi-card.pendentes span { color: var(--warning); }
+        .kpi-card.recusados span { color: var(--danger); }
+        .kpi-card.taxa span { color: #17a2b8; }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .chart-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            height: 300px;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+        th { background-color: var(--light); color: var(--dark); }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .refresh-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .refresh-btn:hover { background: #5a6268; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>Dashboard BI - Acompanhamento Nacional (Termo de Ciência)</h2>
+        <button class="refresh-btn" onclick="carregarDadosBI()">🔄 Atualizar Dados</button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>Filtrar por Estado (UF)</label>
+            <select id="filtroEstado" onchange="aplicarFiltros()">
+                <option value="">Todos os Estados</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Filtrar por Clínica / Unidade</label>
+            <select id="filtroClinica" onchange="aplicarFiltros()">
+                <option value="">Todas as Clínicas</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- KPIS -->
+    <div class="kpi-container">
+        <div class="kpi-card total">
+            <h4>Total Médicos</h4>
+            <span id="kpiTotal">0</span>
+        </div>
+        <div class="kpi-card preenchidos">
+            <h4>Preenchidos</h4>
+            <span id="kpiPreenchidos">0</span>
+        </div>
+        <div class="kpi-card pendentes">
+            <h4>Pendentes</h4>
+            <span id="kpiPendentes">0</span>
+        </div>
+        <div class="kpi-card recusados">
+            <h4>Recusados</h4>
+            <span id="kpiRecusados">0</span>
+        </div>
+        <div class="kpi-card taxa">
+            <h4>Taxa Adesão</h4>
+            <span id="kpiTaxa">0%</span>
+        </div>
+    </div>
+
+    <!-- GRÁFICOS DINÂMICOS -->
+    <div class="charts-container">
+        <div class="chart-card">
+            <canvas id="graficoStatus"></canvas>
+        </div>
+        <div class="chart-card">
+            <canvas id="graficoEstados"></canvas>
+        </div>
+    </div>
+
+    <h3>Detalhamento por Unidade / Clínica</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Clínica / Unidade</th>
+                <th>Cidade</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Preenchidos</th>
+                <th>Pendentes</th>
+                <th>Recusados</th>
+                <th>Adesão</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaBiBody">
+            <!-- Dinâmico -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://mlvdgmvmuzbcughekpiz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_04TgybpwC683g-FRmfFLBg_2qwAVVzl';
+    
+    let supabaseClient = null;
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } catch(e) { console.error("Erro Supabase BI:", e); }
+
+    const STORAGE_KEY = "hapvida_termos_unidades_v2";
+    let dadosGlobais = {};
+    let chartStatusInstance = null;
+    let chartEstadosInstance = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        carregarDadosBI();
+    });
+
+    async function carregarDadosBI() {
+        if (supabaseClient) {
+            try {
+                let { data, error } = await supabaseClient.from('clinicas_hapvida').select('*');
+                if (!error && data) {
+                    dadosGlobais = {};
+                    data.forEach(item => { dadosGlobais[item.id] = item.dados; });
+                }
+            } catch(err) { console.error(err); }
+        } else {
+            dadosGlobais = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        }
+
+        popularFiltrosSelects();
+        aplicarFiltros();
+    }
+
+    function popularFiltrosSelects() {
+        const unidades = Object.values(dadosGlobais);
+        const estadosSet = new Set();
+        const clinicasSelect = document.getElementById('filtroClinica');
+        const estadosSelect = document.getElementById('filtroEstado');
+
+        let clinicaAtual = clinicasSelect.value;
+        let estadoAtual = estadosSelect.value;
+
+        clinicasSelect.innerHTML = '<option value="">Todas as Clínicas</option>';
+        estadosSelect.innerHTML = '<option value="">Todos os Estados</option>';
+
+        unidades.forEach(u => {
+            if (u.estado) estadosSet.add(u.estado);
+            const opt = document.createElement('option');
+            opt.value = u.id;
+            opt.innerText = `${u.nomeClinica} (${u.cidade} - ${u.estado})`;
+            clinicasSelect.appendChild(opt);
+        });
+
+        Array.from(estadosSet).sort().forEach(uf => {
+            const opt = document.createElement('option');
+            opt.value = uf;
+            opt.innerText = uf;
+            estadosSelect.appendChild(opt);
+        });
+
+        clinicasSelect.value = clinicaAtual;
+        estadosSelect.value = estadoAtual;
+    }
+
+    function aplicarFiltros() {
+        const estadoFiltro = document.getElementById('filtroEstado').value;
+        const clinicaFiltro = document.getElementById('filtroClinica').value;
+
+        const unidades = Object.values(dadosGlobais);
+        let filtradas = unidades.filter(u => {
+            let matchEstado = !estadoFiltro || u.estado === estadoFiltro;
+            let matchClinica = !clinicaFiltro || u.id === clinicaFiltro;
+            return matchEstado && matchClinica;
+        });
+
+        renderizarBI(filtradas);
+    }
+
+    function renderizarBI(unidades) {
+        const tbody = document.getElementById('tabelaBiBody');
+        tbody.innerHTML = '';
+
+        let totalGeral = 0;
+        let totalPreenchidos = 0;
+        let totalPendentes = 0;
+        let totalRecusados = 0;
+        let porEstadoMap = {};
+
+        if (unidades.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #6c757d;">Nenhuma unidade encontrada.</td></tr>`;
+            atualizarKPIs(0, 0, 0, 0);
+            renderizarGraficos(0, 0, 0, {});
+            return;
+        }
+
+        unidades.forEach(u => {
+            const t = parseInt(u.qtdMedicos) || 0;
+            const p = parseInt(u.preenchidos) || 0;
+            const pend = parseInt(u.pendentes) || 0;
+            const rec = parseInt(u.recusados) || 0;
+            
+            totalGeral += t;
+            totalPreenchidos += p;
+            totalPendentes += pend;
+            totalRecusados += rec;
+
+            if (!porEstadoMap[u.estado]) porEstadoMap[u.estado] = 0;
+            porEstadoMap[u.estado] += p;
+
+            const taxaAdesao = t > 0 ? ((p / t) * 100).toFixed(1) : 0;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${u.nomeClinica}</strong></td>
+                <td>${u.cidade || ''}</td>
+                <td>${u.estado || ''}</td>
+                <td>${t}</td>
+                <td><span class="badge badge-success">${p}</span></td>
+                <td><span class="badge badge-warning">${pend}</span></td>
+                <td><span class="badge badge-danger">${rec}</span></td>
+                <td><strong>${taxaAdesao}%</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        atualizarKPIs(totalGeral, totalPreenchidos, totalPendentes, totalRecusados);
+        renderizarGraficos(totalPreenchidos, totalPendentes, totalRecusados, porEstadoMap);
+    }
+
+    function atualizarKPIs(total, preenchidos, pendentes, recusados) {
+        document.getElementById('kpiTotal').innerText = total;
+        document.getElementById('kpiPreenchidos').innerText = preenchidos;
+        document.getElementById('kpiPendentes').innerText = pendentes;
+        document.getElementById('kpiRecusados').innerText = recusados;
+        
+        const taxa = total > 0 ? ((preenchidos / total) * 100).toFixed(1) : 0;
+        document.getElementById('kpiTaxa').innerText = taxa + '%';
+    }
+
+    function renderizarGraficos(preenchidos, pendentes, recusados, porEstadoMap) {
+        const ctxStatus = document.getElementById('graficoStatus').getContext('2d');
+        if (chartStatusInstance) chartStatusInstance.destroy();
+        
+        chartStatusInstance = new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['Preenchidos', 'Pendentes', 'Recusados'],
+                datasets: [{
+                    data: [preenchidos, pendentes, recusados],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Status Geral dos Termos' } }
+            }
+        });
+
+        const estadosLabels = Object.keys(porEstadoMap);
+        const estadosValues = Object.values(porEstadoMap);
+
+        const ctxEstados = document.getElementById('graficoEstados').getContext('2d');
+        if (chartEstadosInstance) chartEstadosInstance.destroy();
+
+        chartEstadosInstance = new Chart(ctxEstados, {
+            type: 'bar',
+            data: {
+                labels: estadosLabels.length > 0 ? estadosLabels : ['Nenhum'],
+                datasets: [{
+                    label: 'Termos Preenchidos por Estado',
+                    data: estadosValues.length > 0 ? estadosValues : [0],
+                    backgroundColor: '#0056b3'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Adesão por Estado (UF)' } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
