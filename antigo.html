@@ -56,8 +56,8 @@
 
         .kpi-container {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
             margin-bottom: 30px;
         }
         .kpi-card {
@@ -67,9 +67,8 @@
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
-        .kpi-card h4 { margin: 0 0 10px 0; font-size: 12px; color: #6c757d; }
-        .kpi-card span { font-size: 22px; font-weight: 700; }
-        .kpi-card.clinicas span { color: #6610f2; }
+        .kpi-card h4 { margin: 0 0 10px 0; font-size: 13px; color: #6c757d; }
+        .kpi-card span { font-size: 24px; font-weight: 700; }
         .kpi-card.total span { color: var(--primary); }
         .kpi-card.preenchidos span { color: var(--success); }
         .kpi-card.pendentes span { color: var(--warning); }
@@ -151,10 +150,6 @@
 
     <!-- KPIS -->
     <div class="kpi-container">
-        <div class="kpi-card clinicas">
-            <h4>Qtd. Clínicas</h4>
-            <span id="kpiClinicas">0</span>
-        </div>
         <div class="kpi-card total">
             <h4>Total Médicos</h4>
             <span id="kpiTotal">0</span>
@@ -291,7 +286,6 @@
         const tbody = document.getElementById('tabelaBiBody');
         tbody.innerHTML = '';
 
-        let totalClinicas = unidades.length;
         let totalGeral = 0;
         let totalPreenchidos = 0;
         let totalPendentes = 0;
@@ -300,7 +294,7 @@
 
         if (unidades.length === 0) {
             tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #6c757d;">Nenhuma unidade encontrada.</td></tr>`;
-            atualizarKPIs(0, 0, 0, 0, 0);
+            atualizarKPIs(0, 0, 0, 0);
             renderizarGraficos(0, 0, 0, {});
             return;
         }
@@ -316,10 +310,8 @@
             totalPendentes += pend;
             totalRecusados += rec;
 
-            if (u.estado) {
-                if (!porEstadoMap[u.estado]) porEstadoMap[u.estado] = 0;
-                porEstadoMap[u.estado] += p;
-            }
+            if (!porEstadoMap[u.estado]) porEstadoMap[u.estado] = 0;
+            porEstadoMap[u.estado] += p;
 
             const taxaAdesao = t > 0 ? ((p / t) * 100).toFixed(1) : 0;
 
@@ -337,12 +329,11 @@
             tbody.appendChild(tr);
         });
 
-        atualizarKPIs(totalClinicas, totalGeral, totalPreenchidos, totalPendentes, totalRecusados);
+        atualizarKPIs(totalGeral, totalPreenchidos, totalPendentes, totalRecusados);
         renderizarGraficos(totalPreenchidos, totalPendentes, totalRecusados, porEstadoMap);
     }
 
-    function atualizarKPIs(clinicas, total, preenchidos, pendentes, recusados) {
-        document.getElementById('kpiClinicas').innerText = clinicas;
+    function atualizarKPIs(total, preenchidos, pendentes, recusados) {
         document.getElementById('kpiTotal').innerText = total;
         document.getElementById('kpiPreenchidos').innerText = preenchidos;
         document.getElementById('kpiPendentes').innerText = pendentes;
