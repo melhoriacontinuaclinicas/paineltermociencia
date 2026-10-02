@@ -112,28 +112,10 @@
             position: relative;
         }
 
-        .table-header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 25px;
-            margin-bottom: 15px;
-        }
-        .table-header-container h3 { margin: 0; }
-        .table-filters {
-            display: flex;
-            gap: 10px;
-        }
-        .table-filters input, .table-filters select {
-            padding: 6px 10px;
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-            font-size: 13px;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 15px;
         }
         th, td {
             padding: 12px;
@@ -176,17 +158,17 @@
         </div>
     </div>
 
-    <!-- FILTROS GLOBAIS -->
+    <!-- FILTROS -->
     <div class="filters-bar">
         <div class="filter-group">
             <label>Filtrar por Estado (UF)</label>
-            <select id="filtroEstado" onchange="aplicarFiltrosGlobais()">
+            <select id="filtroEstado" onchange="aplicarFiltros()">
                 <option value="">Todos os Estados</option>
             </select>
         </div>
         <div class="filter-group">
             <label>Filtrar por Clínica / Unidade</label>
-            <select id="filtroClinica" onchange="aplicarFiltrosGlobais()">
+            <select id="filtroClinica" onchange="aplicarFiltros()">
                 <option value="">Todas as Clínicas</option>
             </select>
         </div>
@@ -242,20 +224,7 @@
         </div>
     </div>
 
-    <!-- CABEÇALHO DA TABELA COM FILTROS ESPECÍFICOS -->
-    <div class="table-header-container">
-        <h3>Detalhamento por Unidade / Clínica</h3>
-        <div class="table-filters">
-            <input type="text" id="filtroTextoTabela" placeholder="🔍 Buscar na tabela..." onkeyup="aplicarFiltrosTabela()">
-            <select id="filtroStatusTabela" onchange="aplicarFiltrosTabela()">
-                <option value="">Filtrar por Status</option>
-                <option value="preenchidos">Com Preenchidos</option>
-                <option value="pendentes">Com Pendentes</option>
-                <option value="recusados">Com Recusados</option>
-            </select>
-        </div>
-    </div>
-
+    <h3>Detalhamento por Unidade / Clínica</h3>
     <table>
         <thead>
             <tr>
@@ -288,8 +257,7 @@
     let dadosGlobais = {};
     let chartStatusInstance = null;
     let chartEstadosInstance = null;
-    let unidadesGlobaisFiltradas = []; // Dados após filtro global (Estado/Clínica superior)
-    let unidadesFinaisTabela = [];     // Dados finais após filtros da tabela
+    let unidadesFiltradasCache = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         carregarDadosBI();
@@ -309,7 +277,7 @@
         }
 
         popularFiltrosSelects();
-        aplicarFiltrosGlobais();
+        aplicarFiltros();
     }
 
     function popularFiltrosSelects() {
@@ -343,57 +311,37 @@
         estadosSelect.value = estadoAtual;
     }
 
-    function aplicarFiltrosGlobais() {
+    function aplicarFiltros() {
         const estadoFiltro = document.getElementById('filtroEstado').value;
         const clinicaFiltro = document.getElementById('filtroClinica').value;
 
         const unidades = Object.values(dadosGlobais);
-        unidadesGlobaisFiltradas = unidades.filter(u => {
+        unidadesFiltradasCache = unidades.filter(u => {
             let matchEstado = !estadoFiltro || u.estado === estadoFiltro;
             let matchClinica = !clinicaFiltro || u.id === clinicaFiltro;
             return matchEstado && matchClinica;
         });
 
-        // Atualiza os gráficos e KPIs com base nos filtros globais
-        renderizarBI(unidadesGlobaisFiltradas);
-        
-        // Aplica também os filtros internos da tabela
-        aplicarFiltrosTabela();
-    }
-
-    function aplicarFiltrosTabela() {
-        const termoBusca = document.getElementById('filtroTextoTabela').value.toLowerCase();
-        const statusFiltro = document.getElementById('filtroStatusTabela').value;
-
-        unidadesFinaisTabela = unidadesGlobaisFiltradas.filter(u => {
-            const nome = (u.nomeClinica || '').toLowerCase();
-            const cidade = (u.cidade || '').toLowerCase();
-            const estado = (u.estado || '').toLowerCase();
-
-            const matchTexto = !termoBusca || nome.includes(termoBusca) || cidade.includes(termoBusca) || estado.includes(termoBusca);
-            
-            let matchStatus = true;
-            const p = parseInt(u.preenchidos) || 0;
-            const pend = parseInt(u.pendentes) || 0;
-            const rec = parseInt(u.recusados) || 0;
-
-            if (statusFiltro === 'preenchidos') matchStatus = p > 0;
-            if (statusFiltro === 'pendentes') matchStatus = pend > 0;
-            if (statusFiltro === 'recusados') matchStatus = rec > 0;
-
-            return matchTexto && matchStatus;
-        });
-
-        renderizarTabela(unidadesFinaisTabela);
+        renderizarBI(unidadesFiltradasCache);
     }
 
     function renderizarBI(unidades) {
+        const tbody = document.getElementById('tabelaBiBody');
+        tbody.innerHTML = '';
+
         let totalClinicas = unidades.length;
         let totalGeral = 0;
         let totalPreenchidos = 0;
         let totalPendentes = 0;
         let totalRecusados = 0;
         let porEstadoMap = {};
+
+        if (unidades.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #6c757d;">Nenhuma unidade encontrada.</td></tr>`;
+            atualizarKPIs(0, 0, 0, 0, 0);
+            renderizarGraficos(0, 0, 0, {});
+            return;
+        }
 
         unidades.forEach(u => {
             const t = parseInt(u.qtdMedicos) || 0;
@@ -410,26 +358,7 @@
                 if (!porEstadoMap[u.estado]) porEstadoMap[u.estado] = 0;
                 porEstadoMap[u.estado] += p;
             }
-        });
 
-        atualizarKPIs(totalClinicas, totalGeral, totalPreenchidos, totalPendentes, totalRecusados);
-        renderizarGraficos(totalPreenchidos, totalPendentes, totalRecusados, porEstadoMap);
-    }
-
-    function renderizarTabela(unidades) {
-        const tbody = document.getElementById('tabelaBiBody');
-        tbody.innerHTML = '';
-
-        if (unidades.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #6c757d;">Nenhuma unidade encontrada com os filtros informados.</td></tr>`;
-            return;
-        }
-
-        unidades.forEach(u => {
-            const t = parseInt(u.qtdMedicos) || 0;
-            const p = parseInt(u.preenchidos) || 0;
-            const pend = parseInt(u.pendentes) || 0;
-            const rec = parseInt(u.recusados) || 0;
             const taxaAdesao = t > 0 ? ((p / t) * 100).toFixed(1) : 0;
 
             const tr = document.createElement('tr');
@@ -445,12 +374,16 @@
             `;
             tbody.appendChild(tr);
         });
+
+        atualizarKPIs(totalClinicas, totalGeral, totalPreenchidos, totalPendentes, totalRecusados);
+        renderizarGraficos(totalPreenchidos, totalPendentes, totalRecusados, porEstadoMap);
     }
 
     function atualizarKPIs(clinicas, total, preenchidos, pendentes, recusados) {
         const baseClinicas = 251;
         document.getElementById('kpiClinicas').innerText = clinicas;
         
+        // Adesão de Clínicas Cadastradas em relação à base de 251
         const adesaoClinicas = baseClinicas > 0 ? ((clinicas / baseClinicas) * 100).toFixed(1) : 0;
         document.getElementById('kpiAdesaoClinicas').innerText = adesaoClinicas + '%';
 
@@ -459,9 +392,11 @@
         document.getElementById('kpiPendentes').innerText = pendentes;
         document.getElementById('kpiRecusados').innerText = recusados;
         
+        // Adesão de Preenchimento (Preenchidos / Total de Médicos)
         const adesaoPreenchimentos = total > 0 ? ((preenchidos / total) * 100).toFixed(1) : 0;
         document.getElementById('kpiAdesaoPreenchimentos').innerText = adesaoPreenchimentos + '%';
 
+        // Taxa Adesão Geral
         const taxa = total > 0 ? ((preenchidos / total) * 100).toFixed(1) : 0;
         document.getElementById('kpiTaxa').innerText = taxa + '%';
     }
@@ -512,15 +447,14 @@
     }
 
     function exportarExcel() {
-        // Exporta exatamente o que está visível na tabela após os filtros da tabela
-        if (!unidadesFinaisTabela || unidadesFinaisTabela.length === 0) {
+        if (!unidadesFiltradasCache || unidadesFiltradasCache.length === 0) {
             alert("Não há dados para exportar.");
             return;
         }
 
         let csvContent = "\uFEFFClínica / Unidade;Cidade;Estado;Total Médicos;Preenchidos;Pendentes;Recusados;Adesão\n";
 
-        unidadesFinaisTabela.forEach(u => {
+        unidadesFiltradasCache.forEach(u => {
             const t = parseInt(u.qtdMedicos) || 0;
             const p = parseInt(u.preenchidos) || 0;
             const pend = parseInt(u.pendentes) || 0;
