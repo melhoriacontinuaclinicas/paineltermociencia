@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hapvida - Painel BI | Acompanhamento Termo de Ciência</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Supabase e Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,10 +19,14 @@
         }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f6f9;
+            background-color: #0b2246;
+            background-image: 
+                radial-gradient(circle at 0% 0%, #173c73 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, #07152c 0%, #0b2246 60%);
             color: var(--dark);
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
         }
         .container {
             max-width: 1350px;
@@ -163,6 +167,53 @@
         .refresh-btn:hover { background: #5a6268; }
         .export-btn { background: #28a745; color: white; }
         .export-btn:hover { background: #218838; }
+        .gerencial-btn { background: #ff5722; color: white; }
+        .gerencial-btn:hover { background: #e64a19; }
+
+        /* Estilo da Visão Gerencial (Modal) */
+        #modalGerencial {
+            display: none;
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(11, 26, 70, 0.95);
+            z-index: 99999;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-content {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: linear-gradient(135deg, #0e2246 0%, #0a1730 100%);
+            padding: 30px;
+            border-radius: 16px;
+            color: #fff;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .close-modal {
+            position: absolute;
+            top: 20px; 
+            right: 25px;
+            background: #ff5722;
+            color: #fff;
+            border: none;
+            width: 35px; 
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+        }
+        .close-modal:hover {
+            background: #e64a19;
+        }
     </style>
 </head>
 <body>
@@ -171,8 +222,9 @@
     <div class="header">
         <h2>Dashboard BI - Acompanhamento Nacional (Termo de Ciência)</h2>
         <div class="header-actions">
-            <button class="btn export-btn" onclick="exportarExcel()">📊 Exportar Excel</button>
-            <button class="btn refresh-btn" onclick="carregarDadosBI()">🔄 Atualizar Dados</button>
+            <button type="button" class="btn gerencial-btn" id="btnAbrirGerencial">📈 Visão Gerencial</button>
+            <button type="button" class="btn export-btn" onclick="exportarExcel()">📊 Exportar Excel</button>
+            <button type="button" class="btn refresh-btn" onclick="carregarDadosBI()">🔄 Atualizar Dados</button>
         </div>
     </div>
 
@@ -275,6 +327,112 @@
     </table>
 </div>
 
+<!-- MODAL DA VISÃO GERENCIAL -->
+<div id="modalGerencial">
+    <div class="modal-content">
+        <button type="button" class="close-modal" id="btnFecharGerencial">✕</button>
+        
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
+            <div>
+                <h1 style="font-size: 38px; font-weight: 800; margin: 0; line-height: 1.1; color: #fff;">Status de <span style="color: #ff8a65;">Adesão Nacional</span></h1>
+                <p style="margin: 8px 0 0 0; color: #b0c4de; font-size: 15px; font-weight: 500;">Sinalização de DUT/ROL e Carência Contratual &bull; Acompanhamento por Filial e Clínicas</p>
+            </div>
+            <div style="text-align: right;">
+                <!-- LOGO HAPVIDA -->
+                <div style="margin-bottom: 8px;">
+                    <img src="https://www.hapvida.com.br/site/wp-content/themes/hapvida/assets/images/logo-hapvida.svg" alt="Hapvida" style="height: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3);" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='block';">
+                    <span id="fallbackLogo" style="display:none; font-size: 24px; font-weight: 700; color: #ff5722;">🧡 hapvida</span>
+                </div>
+                <div style="background: rgba(11, 26, 51, 0.7); padding: 10px 15px; border-radius: 8px; font-size: 11px; color: #b0c4de; max-width: 250px; text-align: left; border-left: 3px solid #ff5722;">
+                    <strong>Termo de Ciência</strong><br>Médicos orientados e informados sobre as novas sinalizações do sistema.
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs Gerenciais -->
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
+            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">🏥</div>
+                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">226</div><div style="font-size: 11px; color: #666; font-weight: 600;">Clínicas/Unidades</div></div>
+            </div>
+            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">👨‍⚕</div>
+                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">5.297</div><div style="font-size: 11px; color: #666; font-weight: 600;">Médicos no universo</div></div>
+            </div>
+            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">📋</div>
+                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">2.200</div><div style="font-size: 11px; color: #666; font-weight: 600;">Termos preenchidos</div></div>
+            </div>
+            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">⏳</div>
+                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">3.086</div><div style="font-size: 11px; color: #666; font-weight: 600;">Pendentes</div></div>
+            </div>
+            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
+                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">❌</div>
+                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">11</div><div style="font-size: 11px; color: #666; font-weight: 600;">Recusados</div></div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 25px;">
+            <div style="background: #14315c; border-radius: 10px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="font-size: 14px; font-weight: 700; text-transform: uppercase; color: #b0c4de;">🎯 Adesão Nacional</div>
+                <div style="flex-grow: 1; margin: 0 20px; background: rgba(0,0,0,0.4); border-radius: 10px; height: 14px; overflow: hidden;">
+                    <div style="background: linear-gradient(90deg, #28a745, #5dd39e); height: 100%; width: 41.5%;"></div>
+                </div>
+                <div style="font-size: 28px; font-weight: 800; color: #fff;">41,5%</div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="background: #14315c; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size: 20px;">⭐</span>
+                    <div><div style="font-size: 18px; font-weight: 700;">27</div><div style="font-size: 10px; color: #b0c4de;">Clínicas com 100%</div></div>
+                </div>
+                <div style="background: #14315c; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size: 20px;">🚫</span>
+                    <div><div style="font-size: 18px; font-weight: 700;">48</div><div style="font-size: 10px; color: #b0c4de;">Clínicas com 0%</div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela do Modelo Gerencial -->
+        <div style="background: #11284d; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                    <tr style="background: #173868; color: #b0c4de; font-size: 12px; text-transform: uppercase;">
+                        <th style="padding: 14px 16px;">Filial/UF</th>
+                        <th style="padding: 14px 16px;">Clínicas</th>
+                        <th style="padding: 14px 16px;">Médicos</th>
+                        <th style="padding: 14px 16px;">Adesão</th>
+                        <th style="padding: 14px 16px;">Barra de progresso</th>
+                        <th style="padding: 14px 16px;">Leitura executiva</th>
+                    </tr>
+                </thead>
+                <tbody style="color: #e2e8f0; font-size: 14px;">
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PA</strong></td><td>6</td><td>151</td><td><strong>95,4%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:95.4%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>AL</strong></td><td>1</td><td>26</td><td><strong>88,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:88.5%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>BA</strong></td><td>12</td><td>145</td><td><strong>87,6%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:87.6%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>GO</strong></td><td>3</td><td>7</td><td><strong>71,4%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:71.4%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PI</strong></td><td>2</td><td>65</td><td><strong>66,2%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:66.2%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RN</strong></td><td>4</td><td>114</td><td><strong>64,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:64.0%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SE</strong></td><td>2</td><td>52</td><td><strong>63,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:63.5%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MA</strong></td><td>4</td><td>106</td><td><strong>58,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:58.5%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MG</strong></td><td>17</td><td>465</td><td><strong>57,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:57.0%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RS</strong></td><td>10</td><td>177</td><td><strong>54,8%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:54.8%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>AM</strong></td><td>7</td><td>235</td><td><strong>52,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:52.3%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PE</strong></td><td>17</td><td>409</td><td><strong>44,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#fd7e14;height:100%;width:44.3%;border-radius:6px;"></div></div></td><td>🟠 Recuperação</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RJ</strong></td><td>10</td><td>271</td><td><strong>43,9%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#fd7e14;height:100%;width:43.9%;border-radius:6px;"></div></div></td><td>🟠 Recuperação</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SP</strong></td><td>90</td><td>1.964</td><td><strong>33,6%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:33.6%;border-radius:6px;"></div></div></td><td>🔴 Crítico pelo volume</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>CE</strong></td><td>19</td><td>519</td><td><strong>29,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:29.3%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SC</strong></td><td>8</td><td>180</td><td><strong>25,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:25.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PR</strong></td><td>10</td><td>286</td><td><strong>15,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:15.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PB</strong></td><td>2</td><td>121</td><td><strong>5,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:5.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MS</strong></td><td>1</td><td>3</td><td><strong>0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:0%;border-radius:6px;"></div></div></td><td>🔴 Sem adesão</td></tr>
+                    <tr><td><strong>DF</strong></td><td>1</td><td>1</td><td><strong>0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:0%;border-radius:6px;"></div></div></td><td>🔴 Sem adesão</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <script>
     const SUPABASE_URL = 'https://mlvdgmvmuzbcughekpiz.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_04TgybpwC683g-FRmfFLBg_2qwAVVzl';
@@ -288,11 +446,37 @@
     let dadosGlobais = {};
     let chartStatusInstance = null;
     let chartEstadosInstance = null;
-    let unidadesGlobaisFiltradas = []; // Dados após filtro global (Estado/Clínica superior)
-    let unidadesFinaisTabela = [];     // Dados finais após filtros da tabela
+    let unidadesGlobaisFiltradas = [];
+    let unidadesFinaisTabela = [];
 
     document.addEventListener("DOMContentLoaded", () => {
         carregarDadosBI();
+        
+        // Configuração robusta dos botões da modal
+        const btnAbrir = document.getElementById('btnAbrirGerencial');
+        const btnFechar = document.getElementById('btnFecharGerencial');
+        const modal = document.getElementById('modalGerencial');
+
+        if (btnAbrir) {
+            btnAbrir.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'block';
+            });
+        }
+
+        if (btnFechar) {
+            btnFechar.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'none';
+            });
+        }
+
+        // Fechar ao clicar fora da modal
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     });
 
     async function carregarDadosBI() {
@@ -354,10 +538,7 @@
             return matchEstado && matchClinica;
         });
 
-        // Atualiza os gráficos e KPIs com base nos filtros globais
         renderizarBI(unidadesGlobaisFiltradas);
-        
-        // Aplica também os filtros internos da tabela
         aplicarFiltrosTabela();
     }
 
@@ -512,7 +693,6 @@
     }
 
     function exportarExcel() {
-        // Exporta exatamente o que está visível na tabela após os filtros da tabela
         if (!unidadesFinaisTabela || unidadesFinaisTabela.length === 0) {
             alert("Não há dados para exportar.");
             return;
