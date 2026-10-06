@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hapvida - Painel BI | Acompanhamento Termo de Ciência</title>
+    <title>Painel BI | Acompanhamento Termo de Ciência</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Supabase e Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -170,49 +170,273 @@
         .gerencial-btn { background: #ff5722; color: white; }
         .gerencial-btn:hover { background: #e64a19; }
 
-        /* Estilo da Visão Gerencial (Modal) */
+        /* =========================================================
+           VISÃO GERENCIAL — layout inspirado fielmente na referência
+           ========================================================= */
         #modalGerencial {
             display: none;
             position: fixed;
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background: rgba(11, 26, 70, 0.95);
+            inset: 0;
             z-index: 99999;
             overflow-y: auto;
-            padding: 20px;
+            padding: 0;
+            background:
+                radial-gradient(circle at 5% 3%, rgba(255,196,0,.95) 0 42px, transparent 43px),
+                radial-gradient(circle at 97% 91%, rgba(255,196,0,.95) 0 52px, transparent 53px),
+                linear-gradient(145deg, #073f86 0%, #0752a5 48%, #062b65 100%);
         }
-        .modal-content {
-            max-width: 1200px;
-            margin: 30px auto;
-            background: linear-gradient(135deg, #0e2246 0%, #0a1730 100%);
-            padding: 30px;
-            border-radius: 16px;
-            color: #fff;
+
+        .gerencial-shell {
+            width: min(1500px, calc(100vw - 32px));
+            min-height: calc(100vh - 32px);
+            margin: 16px auto;
+            border-radius: 28px 28px 110px 28px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 24px 70px rgba(0,0,0,.38);
             position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
         }
-        .close-modal {
-            position: absolute;
-            top: 20px; 
-            right: 25px;
-            background: #ff5722;
+
+        .gerencial-top {
+            position: relative;
+            padding: 42px 46px 30px;
             color: #fff;
-            border: none;
-            width: 35px; 
-            height: 35px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 67% 12%, rgba(255,255,255,.08) 0 65px, transparent 66px),
+                radial-gradient(circle at 6% -10%, rgba(255,196,0,.95) 0 58px, transparent 59px),
+                linear-gradient(135deg, #0052a7 0%, #0754a5 55%, #0b3e86 100%);
         }
-        .close-modal:hover {
-            background: #e64a19;
+        .gerencial-top:after {
+            content: '';
+            position: absolute;
+            width: 360px;
+            height: 180px;
+            right: -110px;
+            bottom: -120px;
+            border-radius: 50%;
+            border: 42px solid rgba(255,255,255,.04);
+        }
+        .gerencial-close {
+            position: absolute;
+            top: 16px;
+            right: 18px;
+            z-index: 5;
+            width: 38px;
+            height: 38px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,.16);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .gerencial-close:hover { background: rgba(255,255,255,.28); }
+        .gerencial-head-row {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        .gerencial-title {
+            margin: 0;
+            font-size: clamp(34px, 4vw, 58px);
+            line-height: .98;
+            letter-spacing: -1.8px;
+            font-weight: 800;
+        }
+        .gerencial-title .accent { color: #ffc400; }
+        .gerencial-subtitle {
+            margin: 15px 0 0;
+            font-size: clamp(15px, 1.45vw, 22px);
+            font-weight: 600;
+            opacity: .96;
+        }
+        .gerencial-caption {
+            margin: 9px 0 0;
+            font-size: 16px;
+            color: #a9d6ff;
+        }
+        .gerencial-brand {
+            min-width: 285px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+        .gerencial-brand img { height: 42px; max-width: 190px; object-fit: contain; }
+        .gerencial-brand-fallback { display:none; font-size: 28px; font-weight: 800; }
+        .science-card {
+            width: 270px;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,.35);
+            border-radius: 16px;
+            background: rgba(3,39,88,.34);
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            backdrop-filter: blur(5px);
+        }
+        .science-icon {
+            width: 48px;
+            height: 48px;
+            flex: 0 0 48px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-size: 24px;
+        }
+        .science-card strong { display:block; font-size: 15px; margin-bottom: 3px; }
+        .science-card span { display:block; font-size: 11px; line-height: 1.35; color:#d9edff; }
+
+        .gerencial-body {
+            padding: 0 28px 34px;
+            background: #fff;
+        }
+        .gerencial-kpis {
+            margin-top: -1px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            position: relative;
+            z-index: 3;
+        }
+        .g-kpi {
+            min-height: 90px;
+            padding: 12px 13px;
+            box-sizing: border-box;
+            border-radius: 14px;
+            border: 1px solid #dce7f2;
+            background: linear-gradient(180deg, #fff 0%, #f3f8fd 100%);
+            box-shadow: 0 5px 16px rgba(20,65,120,.08);
+            display:flex;
+            align-items:center;
+            gap: 11px;
+            color:#17345d;
+        }
+        .g-kpi-icon {
+            width: 44px;
+            height: 44px;
+            flex: 0 0 44px;
+            border-radius: 11px;
+            display:grid;
+            place-items:center;
+            background:#eaf3fb;
+            font-size:22px;
+        }
+        .g-kpi-value { font-size: 24px; line-height: 1; font-weight: 800; color:#064a96; }
+        .g-kpi-label { margin-top: 5px; font-size: 11px; line-height:1.15; font-weight:600; color:#4d6078; }
+        .g-kpi.green .g-kpi-value { color:#16805f; }
+        .g-kpi.orange .g-kpi-value { color:#e46a24; }
+        .g-kpi.red .g-kpi-value { color:#d9232e; }
+
+        .gerencial-adherence-row {
+            display:grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(280px, 1fr);
+            gap: 12px;
+            margin: 14px 0 16px;
+        }
+        .national-adherence {
+            min-height: 72px;
+            padding: 0 22px;
+            box-sizing: border-box;
+            border-radius: 15px;
+            background: linear-gradient(100deg,#064a96 0%,#0b5aa9 100%);
+            color:#fff;
+            display:flex;
+            align-items:center;
+            gap: 16px;
+            box-shadow: 0 5px 14px rgba(0,74,150,.14);
+        }
+        .national-adherence .label { font-weight:800; font-size:16px; white-space:nowrap; }
+        .national-adherence .value { font-size:32px; font-weight:900; white-space:nowrap; }
+        .g-progress {
+            height: 20px;
+            flex:1;
+            min-width: 100px;
+            overflow:hidden;
+            border-radius: 20px;
+            background:#dbe4ee;
+        }
+        .g-progress > span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#19c856,#32d66b); }
+        .zero-one-hundred { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .mini-kpi {
+            min-height:72px;
+            padding:10px 13px;
+            box-sizing:border-box;
+            border:1px solid #dce7f2;
+            border-radius:15px;
+            background:#f5faff;
+            display:flex;
+            align-items:center;
+            gap:10px;
+            color:#17345d;
+        }
+        .mini-kpi .mini-icon { font-size:22px; }
+        .mini-kpi .mini-value { font-size:21px; font-weight:800; line-height:1; }
+        .mini-kpi .mini-label { font-size:10px; margin-top:4px; color:#62748a; font-weight:600; }
+
+        .gerencial-table-wrap {
+            border: 1px solid #d8e2ec;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(18,54,95,.06);
+        }
+        .gerencial-table {
+            width:100%;
+            border-collapse:collapse;
+            color:#182f53;
+            background:#fff;
+        }
+        .gerencial-table thead th {
+            padding: 13px 16px;
+            color:#fff;
+            background:linear-gradient(180deg,#0756a9,#06488f);
+            font-size:13px;
+            font-weight:800;
+            white-space:nowrap;
+            border-right:1px solid rgba(255,255,255,.12);
+        }
+        .gerencial-table tbody td {
+            padding: 8px 16px;
+            font-size:14px;
+            border-bottom:1px solid #e5ebf2;
+            height: 35px;
+        }
+        .gerencial-table tbody tr:nth-child(even) { background:#f8fbfe; }
+        .gerencial-table tbody tr:hover { background:#eef7ff; }
+        .gerencial-table .uf { font-weight:900; color:#17315a; }
+        .gerencial-table .adhesion { font-weight:900; }
+        .gerencial-table .progress-cell { width:30%; }
+        .gerencial-table .g-row-progress { height:12px; border-radius:8px; background:#e5ebf1; overflow:hidden; }
+        .gerencial-table .g-row-progress span { display:block; height:100%; border-radius:8px; }
+        .executive { font-weight:600; white-space:nowrap; }
+        .exec-dot { display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:9px; vertical-align:-2px; }
+        .gerencial-empty { padding:40px !important; text-align:center; color:#687a90; }
+        .gerencial-footer-note { margin-top:9px; font-size:10px; color:#8190a2; text-align:right; }
+
+        @media (max-width: 1050px) {
+            .gerencial-top { padding:34px 28px 25px; }
+            .gerencial-kpis { grid-template-columns: repeat(3, 1fr); }
+            .gerencial-adherence-row { grid-template-columns:1fr; }
+            .gerencial-table-wrap { overflow-x:auto; }
+            .gerencial-table { min-width:900px; }
+        }
+        @media (max-width: 700px) {
+            #modalGerencial { padding:0; }
+            .gerencial-shell { width:100%; min-height:100vh; margin:0; border-radius:0; }
+            .gerencial-head-row { flex-direction:column; }
+            .gerencial-brand { align-items:flex-start; min-width:0; }
+            .science-card { width:min(100%, 330px); }
+            .gerencial-kpis { grid-template-columns: repeat(2, 1fr); }
+            .gerencial-body { padding:0 12px 24px; }
+            .national-adherence { flex-wrap:wrap; padding:12px 14px; }
+            .national-adherence .g-progress { order:3; flex-basis:100%; }
+            .zero-one-hundred { grid-template-columns:1fr 1fr; }
         }
     </style>
 </head>
@@ -328,108 +552,63 @@
 </div>
 
 <!-- MODAL DA VISÃO GERENCIAL -->
-<div id="modalGerencial">
-    <div class="modal-content">
-        <button type="button" class="close-modal" id="btnFecharGerencial">✕</button>
-        
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
-            <div>
-                <h1 style="font-size: 38px; font-weight: 800; margin: 0; line-height: 1.1; color: #fff;">Status de <span style="color: #ff8a65;">Adesão Nacional</span></h1>
-                <p style="margin: 8px 0 0 0; color: #b0c4de; font-size: 15px; font-weight: 500;">Sinalização de DUT/ROL e Carência Contratual &bull; Acompanhamento por Filial e Clínicas</p>
-            </div>
-            <div style="text-align: right;">
-                <!-- LOGO HAPVIDA -->
-                <div style="margin-bottom: 8px;">
-                    <img src="https://www.hapvida.com.br/site/wp-content/themes/hapvida/assets/images/logo-hapvida.svg" alt="Hapvida" style="height: 36px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3);" onerror="this.style.display='none'; document.getElementById('fallbackLogo').style.display='block';">
-                    <span id="fallbackLogo" style="display:none; font-size: 24px; font-weight: 700; color: #ff5722;">🧡 hapvida</span>
+<div id="modalGerencial" aria-hidden="true">
+    <div class="gerencial-shell">
+        <section class="gerencial-top">
+            <button type="button" class="gerencial-close" id="btnFecharGerencial" aria-label="Fechar">✕</button>
+            <div class="gerencial-head-row">
+                <div>
+                    <h1 class="gerencial-title">Status de <span class="accent">Adesão</span> Nacional</h1>
+                    <p class="gerencial-subtitle">Sinalização de DUT/ROL e Carência Contratual</p>
+                    <p class="gerencial-caption">Acompanhamento por Filial e Clínicas</p>
                 </div>
-                <div style="background: rgba(11, 26, 51, 0.7); padding: 10px 15px; border-radius: 8px; font-size: 11px; color: #b0c4de; max-width: 250px; text-align: left; border-left: 3px solid #ff5722;">
-                    <strong>Termo de Ciência</strong><br>Médicos orientados e informados sobre as novas sinalizações do sistema.
+                <div class="gerencial-brand">
+                    <div class="science-card">
+                        <div class="science-icon">☑</div>
+                        <div><strong>Termo de Ciência</strong><span>Médicos orientados e informados sobre as novas sinalizações do sistema.</span></div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- KPIs Gerenciais -->
-        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px;">
-            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">🏥</div>
-                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">226</div><div style="font-size: 11px; color: #666; font-weight: 600;">Clínicas/Unidades</div></div>
+        <section class="gerencial-body">
+            <div class="gerencial-kpis">
+                <div class="g-kpi"><div class="g-kpi-icon">🏥</div><div><div class="g-kpi-value" id="gClinicas">0</div><div class="g-kpi-label">Clínicas/Unidades</div></div></div>
+                <div class="g-kpi"><div class="g-kpi-icon">👨‍⚕️</div><div><div class="g-kpi-value" id="gMedicos">0</div><div class="g-kpi-label">Médicos no universo</div></div></div>
+                <div class="g-kpi green"><div class="g-kpi-icon">📋</div><div><div class="g-kpi-value" id="gPreenchidos">0</div><div class="g-kpi-label">Termos preenchidos</div></div></div>
+                <div class="g-kpi orange"><div class="g-kpi-icon">⌛</div><div><div class="g-kpi-value" id="gPendentes">0</div><div class="g-kpi-label">Pendentes</div></div></div>
+                <div class="g-kpi red"><div class="g-kpi-icon">✕</div><div><div class="g-kpi-value" id="gRecusados">0</div><div class="g-kpi-label">Recusados</div></div></div>
             </div>
-            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">👨‍⚕</div>
-                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">5.297</div><div style="font-size: 11px; color: #666; font-weight: 600;">Médicos no universo</div></div>
-            </div>
-            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">📋</div>
-                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">2.200</div><div style="font-size: 11px; color: #666; font-weight: 600;">Termos preenchidos</div></div>
-            </div>
-            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">⏳</div>
-                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">3.086</div><div style="font-size: 11px; color: #666; font-weight: 600;">Pendentes</div></div>
-            </div>
-            <div style="background: #fff; color: #333; padding: 15px 12px; border-radius: 10px; display: flex; align-items: center; gap: 12px;">
-                <div style="font-size: 22px; background: #f0f4f8; padding: 10px; border-radius: 8px;">❌</div>
-                <div><div style="font-size: 20px; font-weight: 700; color: #0c1c3c;">11</div><div style="font-size: 11px; color: #666; font-weight: 600;">Recusados</div></div>
-            </div>
-        </div>
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px; margin-bottom: 25px;">
-            <div style="background: #14315c; border-radius: 10px; padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.1);">
-                <div style="font-size: 14px; font-weight: 700; text-transform: uppercase; color: #b0c4de;">🎯 Adesão Nacional</div>
-                <div style="flex-grow: 1; margin: 0 20px; background: rgba(0,0,0,0.4); border-radius: 10px; height: 14px; overflow: hidden;">
-                    <div style="background: linear-gradient(90deg, #28a745, #5dd39e); height: 100%; width: 41.5%;"></div>
+            <div class="gerencial-adherence-row">
+                <div class="national-adherence">
+                    <div class="label">🎯 Adesão Nacional</div>
+                    <div class="g-progress"><span id="gAdesaoBar" style="width:0%"></span></div>
+                    <div class="value" id="gAdesao">0%</div>
                 </div>
-                <div style="font-size: 28px; font-weight: 800; color: #fff;">41,5%</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div style="background: #14315c; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1);">
-                    <span style="font-size: 20px;">⭐</span>
-                    <div><div style="font-size: 18px; font-weight: 700;">27</div><div style="font-size: 10px; color: #b0c4de;">Clínicas com 100%</div></div>
-                </div>
-                <div style="background: #14315c; border-radius: 10px; padding: 12px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.1);">
-                    <span style="font-size: 20px;">🚫</span>
-                    <div><div style="font-size: 18px; font-weight: 700;">48</div><div style="font-size: 10px; color: #b0c4de;">Clínicas com 0%</div></div>
+                <div class="zero-one-hundred">
+                    <div class="mini-kpi"><div class="mini-icon">⭐</div><div><div class="mini-value" id="gClinicas100">0</div><div class="mini-label">Clínicas com 100%</div></div></div>
+                    <div class="mini-kpi"><div class="mini-icon">🚫</div><div><div class="mini-value" id="gClinicas0">0</div><div class="mini-label">Clínicas com 0%</div></div></div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabela do Modelo Gerencial -->
-        <div style="background: #11284d; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
-            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                <thead>
-                    <tr style="background: #173868; color: #b0c4de; font-size: 12px; text-transform: uppercase;">
-                        <th style="padding: 14px 16px;">Filial/UF</th>
-                        <th style="padding: 14px 16px;">Clínicas</th>
-                        <th style="padding: 14px 16px;">Médicos</th>
-                        <th style="padding: 14px 16px;">Adesão</th>
-                        <th style="padding: 14px 16px;">Barra de progresso</th>
-                        <th style="padding: 14px 16px;">Leitura executiva</th>
-                    </tr>
-                </thead>
-                <tbody style="color: #e2e8f0; font-size: 14px;">
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PA</strong></td><td>6</td><td>151</td><td><strong>95,4%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:95.4%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>AL</strong></td><td>1</td><td>26</td><td><strong>88,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:88.5%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>BA</strong></td><td>12</td><td>145</td><td><strong>87,6%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:87.6%;border-radius:6px;"></div></div></td><td>🟢 Excelente</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>GO</strong></td><td>3</td><td>7</td><td><strong>71,4%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:71.4%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PI</strong></td><td>2</td><td>65</td><td><strong>66,2%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:66.2%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RN</strong></td><td>4</td><td>114</td><td><strong>64,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:64.0%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SE</strong></td><td>2</td><td>52</td><td><strong>63,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#28a745;height:100%;width:63.5%;border-radius:6px;"></div></div></td><td>🟢 Boa</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MA</strong></td><td>4</td><td>106</td><td><strong>58,5%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:58.5%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MG</strong></td><td>17</td><td>465</td><td><strong>57,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:57.0%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RS</strong></td><td>10</td><td>177</td><td><strong>54,8%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:54.8%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>AM</strong></td><td>7</td><td>235</td><td><strong>52,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#ffc107;height:100%;width:52.3%;border-radius:6px;"></div></div></td><td>🟡 Atenção</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PE</strong></td><td>17</td><td>409</td><td><strong>44,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#fd7e14;height:100%;width:44.3%;border-radius:6px;"></div></div></td><td>🟠 Recuperação</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>RJ</strong></td><td>10</td><td>271</td><td><strong>43,9%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#fd7e14;height:100%;width:43.9%;border-radius:6px;"></div></div></td><td>🟠 Recuperação</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SP</strong></td><td>90</td><td>1.964</td><td><strong>33,6%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:33.6%;border-radius:6px;"></div></div></td><td>🔴 Crítico pelo volume</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>CE</strong></td><td>19</td><td>519</td><td><strong>29,3%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:29.3%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>SC</strong></td><td>8</td><td>180</td><td><strong>25,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:25.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PR</strong></td><td>10</td><td>286</td><td><strong>15,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:15.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>PB</strong></td><td>2</td><td>121</td><td><strong>5,0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:5.0%;border-radius:6px;"></div></div></td><td>🔴 Crítico</td></tr>
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);"><td><strong>MS</strong></td><td>1</td><td>3</td><td><strong>0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:0%;border-radius:6px;"></div></div></td><td>🔴 Sem adesão</td></tr>
-                    <tr><td><strong>DF</strong></td><td>1</td><td>1</td><td><strong>0%</strong></td><td><div style="background:rgba(255,255,255,0.1);height:10px;border-radius:6px;"><div style="background:#dc3545;height:100%;width:0%;border-radius:6px;"></div></div></td><td>🔴 Sem adesão</td></tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="gerencial-table-wrap">
+                <table class="gerencial-table">
+                    <thead>
+                        <tr>
+                            <th>Filial/UF</th>
+                            <th>Clínicas</th>
+                            <th>Médicos</th>
+                            <th>Adesão</th>
+                            <th class="progress-cell">Barra de progresso</th>
+                            <th>Leitura executiva</th>
+                        </tr>
+                    </thead>
+                    <tbody id="gerencialTableBody"></tbody>
+                </table>
+            </div>
+            <div class="gerencial-footer-note">Visão calculada a partir dos dados atualmente carregados e dos filtros selecionados.</div>
+        </section>
     </div>
 </div>
 
@@ -460,7 +639,9 @@
         if (btnAbrir) {
             btnAbrir.addEventListener('click', (e) => {
                 e.preventDefault();
+                renderizarVisaoGerencial(unidadesGlobaisFiltradas);
                 modal.style.display = 'block';
+                modal.setAttribute('aria-hidden', 'false');
             });
         }
 
@@ -468,6 +649,7 @@
             btnFechar.addEventListener('click', (e) => {
                 e.preventDefault();
                 modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
             });
         }
 
@@ -475,6 +657,7 @@
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
             }
         });
     });
@@ -539,6 +722,7 @@
         });
 
         renderizarBI(unidadesGlobaisFiltradas);
+        if (document.getElementById('modalGerencial').style.display === 'block') renderizarVisaoGerencial(unidadesGlobaisFiltradas);
         aplicarFiltrosTabela();
     }
 
@@ -689,6 +873,84 @@
                 plugins: { title: { display: true, text: 'Adesão por Estado (UF)' } },
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
             }
+        });
+    }
+
+    function formatarNumero(n) {
+        return Number(n || 0).toLocaleString('pt-BR');
+    }
+
+    function calcularLeitura(adesao, medicos) {
+        if (adesao >= 85) return {texto:'Excelente', cor:'#19b95a'};
+        if (adesao >= 60) return {texto:'Boa', cor:'#19b95a'};
+        if (adesao >= 50) return {texto:'Atenção', cor:'#ffc400'};
+        if (adesao >= 40) return {texto:'Recuperação', cor:'#f28a13'};
+        if ((parseInt(medicos) || 0) >= 500) return {texto:'Crítico pelo volume', cor:'#e3212d'};
+        if (adesao === 0) return {texto:'Sem adesão', cor:'#e3212d'};
+        return {texto:'Crítico', cor:'#e3212d'};
+    }
+
+    function renderizarVisaoGerencial(unidades) {
+        unidades = Array.isArray(unidades) ? unidades : [];
+        const totalClinicas = unidades.length;
+        let medicos = 0, preenchidos = 0, pendentes = 0, recusados = 0;
+        const estados = {};
+
+        unidades.forEach(u => {
+            const t = parseInt(u.qtdMedicos) || 0;
+            const p = parseInt(u.preenchidos) || 0;
+            const pend = parseInt(u.pendentes) || 0;
+            const rec = parseInt(u.recusados) || 0;
+            medicos += t; preenchidos += p; pendentes += pend; recusados += rec;
+            const uf = (u.estado || 'N/I').toUpperCase();
+            if (!estados[uf]) estados[uf] = {clinicas:0, medicos:0, preenchidos:0};
+            estados[uf].clinicas++;
+            estados[uf].medicos += t;
+            estados[uf].preenchidos += p;
+        });
+
+        const adesao = medicos > 0 ? (preenchidos / medicos) * 100 : 0;
+        const clinicas100 = unidades.filter(u => {
+            const t = parseInt(u.qtdMedicos) || 0, p = parseInt(u.preenchidos) || 0;
+            return t > 0 && p >= t;
+        }).length;
+        const clinicas0 = unidades.filter(u => (parseInt(u.preenchidos) || 0) === 0).length;
+
+        document.getElementById('gClinicas').textContent = formatarNumero(totalClinicas);
+        document.getElementById('gMedicos').textContent = formatarNumero(medicos);
+        document.getElementById('gPreenchidos').textContent = formatarNumero(preenchidos);
+        document.getElementById('gPendentes').textContent = formatarNumero(pendentes);
+        document.getElementById('gRecusados').textContent = formatarNumero(recusados);
+        document.getElementById('gAdesao').textContent = adesao.toFixed(1).replace('.', ',') + '%';
+        document.getElementById('gAdesaoBar').style.width = Math.max(0, Math.min(100, adesao)) + '%';
+        document.getElementById('gClinicas100').textContent = formatarNumero(clinicas100);
+        document.getElementById('gClinicas0').textContent = formatarNumero(clinicas0);
+
+        const tbody = document.getElementById('gerencialTableBody');
+        tbody.innerHTML = '';
+        const listaEstados = Object.entries(estados).map(([uf, d]) => ({
+            uf, ...d, adesao: d.medicos > 0 ? (d.preenchidos / d.medicos) * 100 : 0
+        })).sort((a,b) => b.adesao - a.adesao || b.medicos - a.medicos);
+
+        if (!listaEstados.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="gerencial-empty">Nenhum dado encontrado com os filtros atuais.</td></tr>';
+            return;
+        }
+
+        listaEstados.forEach(item => {
+            const leitura = calcularLeitura(item.adesao, item.medicos);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="uf">${item.uf}</td>
+                <td>${formatarNumero(item.clinicas)}</td>
+                <td>${formatarNumero(item.medicos)}</td>
+                <td class="adhesion">${item.adesao.toFixed(1).replace('.', ',')}%</td>
+                <td class="progress-cell">
+                    <div class="g-row-progress"><span style="width:${Math.max(0,Math.min(100,item.adesao))}%;background:${leitura.cor};"></span></div>
+                </td>
+                <td class="executive"><span class="exec-dot" style="background:${leitura.cor}"></span>${leitura.texto}</td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 
