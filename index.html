@@ -621,7 +621,7 @@
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } catch(e) { console.error("Erro Supabase BI:", e); }
 
-    const STORAGE_KEY = "hapvida_termos_unidades_v2";
+    const STORAGE_KEY = "termos_unidades_v2";
     let dadosGlobais = {};
     let chartStatusInstance = null;
     let chartEstadosInstance = null;
@@ -666,11 +666,20 @@
         if (supabaseClient) {
             try {
                 let { data, error } = await supabaseClient.from('clinicas_hapvida').select('*');
-                if (!error && data) {
-                    dadosGlobais = {};
-                    data.forEach(item => { dadosGlobais[item.id] = item.dados; });
+                if (error) {
+                    console.error('Erro ao carregar dados do Supabase:', error);
+                    alert('Não foi possível atualizar os dados do banco. Verifique a conexão com o Supabase.');
+                    return;
                 }
-            } catch(err) { console.error(err); }
+                dadosGlobais = {};
+                (data || []).forEach(item => {
+                    dadosGlobais[item.id] = { ...(item.dados || {}), id: item.id };
+                });
+            } catch(err) {
+                console.error(err);
+                alert('Erro ao atualizar os dados do painel.');
+                return;
+            }
         } else {
             dadosGlobais = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
         }
@@ -987,7 +996,7 @@
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.setAttribute("href", url);
-        link.setAttribute("download", "acompanhamento_termo_ciencia_hapvida.csv");
+        link.setAttribute("download", "acompanhamento_termo_ciencia.csv");
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
