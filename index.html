@@ -889,14 +889,14 @@
         return Number(n || 0).toLocaleString('pt-BR');
     }
 
-    function calcularLeitura(adesao, medicos) {
-        if (adesao >= 85) return {texto:'Excelente', cor:'#19b95a'};
-        if (adesao >= 60) return {texto:'Boa', cor:'#19b95a'};
-        if (adesao >= 50) return {texto:'Atenção', cor:'#ffc400'};
-        if (adesao >= 40) return {texto:'Recuperação', cor:'#f28a13'};
-        if ((parseInt(medicos) || 0) >= 500) return {texto:'Crítico pelo volume', cor:'#e3212d'};
-        if (adesao === 0) return {texto:'Sem adesão', cor:'#e3212d'};
-        return {texto:'Crítico', cor:'#e3212d'};
+    function calcularLeitura(adesao) {
+        if (adesao >= 100) {
+            return { texto: 'Bom', cor: '#28a745' }; // Verde: 100% bom
+        } else if (adesao >= 90) {
+            return { texto: 'Atenção', cor: '#ffc107' }; // Amarelo: 90-99% atenção
+        } else {
+            return { texto: 'Ruim', cor: '#dc3545' }; // Vermelho: abaixo de 89% Ruim
+        }
     }
 
     function renderizarVisaoGerencial(unidades) {
@@ -947,7 +947,7 @@
         }
 
         listaEstados.forEach(item => {
-            const leitura = calcularLeitura(item.adesao, item.medicos);
+            const leitura = calcularLeitura(item.adesao);
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="uf">${item.uf}</td>
